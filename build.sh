@@ -23,5 +23,5 @@ esac
 prepare_sources "$_download"
 configure_build "$_arch" release
 
-helium_build chrome/installer/mac
+hark_build chrome/installer/mac
 "$_root_dir/sign_and_package_app.sh"

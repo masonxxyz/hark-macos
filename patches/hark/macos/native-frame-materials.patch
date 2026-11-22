@@ -3,8 +3,8 @@
 @@ -1958,6 +1958,7 @@ if (is_mac) {
        "//chrome/browser/profiles:profile",
        "//chrome/browser/themes",
-       "//chrome/browser/ui/views/helium:fullscreen_window_controls_mac",
-+      "//chrome/browser/ui/views/helium:native_frame_materials",
+       "//chrome/browser/ui/views/hark:fullscreen_window_controls_mac",
++      "//chrome/browser/ui/views/hark:native_frame_materials",
        "//chrome/browser/ui:fullscreen_util_mac",
        "//chrome/browser/ui:layout_constants",
        "//chrome/browser/ui:view_ids",
@@ -12,7 +12,7 @@
        "//base:i18n",
        "//chrome/app:command_ids",
        "//chrome/app:generated_resources",
-+      "//chrome/browser/ui/views/helium:native_frame_materials",
++      "//chrome/browser/ui/views/hark:native_frame_materials",
        "//chrome/browser:app_controller_mac",
        "//chrome/browser:global_keyboard_shortcuts_mac",
        "//chrome/browser/apps/app_shim",
@@ -20,7 +20,7 @@
      "//chrome/browser/app_mode",
      "//chrome/browser/profiles:profile",
      "//chrome/browser/themes",
-+    "//chrome/browser/ui/views/helium:native_frame_materials",
++    "//chrome/browser/ui/views/hark:native_frame_materials",
      "//chrome/browser/ui:browser_init_state",
      "//chrome/browser/ui:browser_manager_service",
      "//chrome/browser/ui:browser_window_state",
@@ -70,8 +70,8 @@
  #include "chrome/browser/ui/views/frame/caption_button_placeholder_container.h"
 -#include "chrome/browser/ui/views/frame/glass_frame_service.h"
  #include "chrome/browser/ui/views/frame/tab_strip_region_view.h"
- #import "chrome/browser/ui/views/helium/fullscreen_window_controls_mac.h"
-+#include "chrome/browser/ui/views/helium/native_frame_materials.h"
+ #import "chrome/browser/ui/views/hark/fullscreen_window_controls_mac.h"
++#include "chrome/browser/ui/views/hark/native_frame_materials.h"
  #include "chrome/browser/ui/views/tabs/tab_strip.h"
  #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
  #include "chrome/browser/ui/views/web_apps/frame_toolbar/web_app_frame_toolbar_utils.h"
@@ -92,7 +92,7 @@
        fullscreen_session_timer_(std::make_unique<base::OneShotTimer>()) {
 -  // GlassFrameService is only available if glass frame is enabled.
 -  if (auto* const glass_service = GlassFrameService::GetInstance()) {
-+  if (helium::ShouldUseNativeFrameMaterials(browser_view)) {
++  if (hark::ShouldUseNativeFrameMaterials(browser_view)) {
      SetPaintToLayer();
 -    is_glass_frame_eligible_ =
 -        glass_service->IsBrowserWindowEligible(browser_view->browser());
@@ -112,13 +112,13 @@
  void BrowserFrameViewMac::PaintAsActiveChanged() {
    UpdateCaptionButtonPlaceholderContainerBackground();
 -  if (!is_glass_frame_eligible_) {
-+  if (!helium::ShouldUseNativeFrameMaterials(GetBrowserView())) {
++  if (!hark::ShouldUseNativeFrameMaterials(GetBrowserView())) {
      BrowserFrameView::PaintAsActiveChanged();
    }
  }
  
  void BrowserFrameViewMac::OnThemeChanged() {
-+  if (helium::ShouldUseNativeFrameMaterials(GetBrowserView())) {
++  if (hark::ShouldUseNativeFrameMaterials(GetBrowserView())) {
 +    if (!layer()) {
 +      SetPaintToLayer();
 +    }
@@ -136,7 +136,7 @@
 -  if (is_glass_frame_eligible_) {
 -    // In glass mode, painting to frame color happens in the opaque background
 -    // view instead.
-+  if (helium::ShouldUseNativeFrameMaterials(GetBrowserView())) {
++  if (hark::ShouldUseNativeFrameMaterials(GetBrowserView())) {
      return;
    }
  
@@ -145,7 +145,7 @@
      caption_button_placeholder_container_->SetBackground(
          views::CreateSolidBackground(
 -            is_glass_frame_eligible_
-+            helium::ShouldUseNativeFrameMaterials(GetBrowserView())
++            hark::ShouldUseNativeFrameMaterials(GetBrowserView())
                  ? SK_ColorTRANSPARENT
                  : GetFrameColor(BrowserFrameActiveState::kUseCurrent)));
    }
@@ -268,8 +268,8 @@
  #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 +#include "chrome/browser/profiles/profile.h"
 +#include "chrome/browser/ui/color/chrome_color_id.h"
-+#include "chrome/browser/ui/views/helium/native_frame_materials.h"
-+#include "chrome/browser/ui/views/helium/native_frame_materials_mac.h"
++#include "chrome/browser/ui/views/hark/native_frame_materials.h"
++#include "chrome/browser/ui/views/hark/native_frame_materials_mac.h"
  #include "chrome/common/pref_names.h"
  #include "chrome/grit/generated_resources.h"
  #include "components/bookmarks/common/bookmark_pref_names.h"
@@ -370,7 +370,7 @@
    CHECK(browser_view);
 +  pref_change_registrar_.Init(browser_view_->GetProfile()->GetPrefs());
 +  pref_change_registrar_.Add(
-+      prefs::kHeliumNativeFrameMaterials,
++      prefs::kHarkNativeFrameMaterials,
 +      base::BindRepeating(
 +          &BrowserNativeWidgetMac::OnNativeFrameMaterialsPrefChanged,
 +          base::Unretained(this)));
@@ -521,7 +521,7 @@
    CHECK(browser_view_);
    NativeWidgetMacNSWindow* ns_window = NativeWidgetMac::CreateNSWindow(params);
 +  SetNativeFrameMaterialWindowState(
-+      ns_window, helium::ShouldUseNativeFrameMaterials(browser_view_));
++      ns_window, hark::ShouldUseNativeFrameMaterials(browser_view_));
    touch_bar_delegate_ = [[BrowserWindowTouchBarViewsDelegate alloc]
        initWithBrowser:browser_view_->browser()
                 window:ns_window];
@@ -596,7 +596,7 @@
 +  if (!browser_view_) {
      return;
    }
-+  UpdateGlassEligibility(helium::ShouldUseNativeFrameMaterials(browser_view_));
++  UpdateGlassEligibility(hark::ShouldUseNativeFrameMaterials(browser_view_));
 +  UpdateBackgroundColor();
 +}
  
@@ -729,7 +729,7 @@
 -    UpdateBackgroundColor();
 +  if (!background_view_) {
 +    background_view_ =
-+        helium::CreateNativeFrameMaterialBackgroundView(content_view.bounds);
++        hark::CreateNativeFrameMaterialBackgroundView(content_view.bounds);
 +    [content_view addSubview:background_view_
 +                  positioned:NSWindowBelow
 +                  relativeTo:nil];
@@ -847,7 +847,7 @@
    last_theme_color_ = theme_color;
 -  last_is_vertical_tabs_ = is_vertical_tabs;
 -  has_multiple_profiles_open_ = are_multiple_profiles_open;
-+  helium::UpdateNativeFrameMaterialBackgroundView(background_view_, color_mode,
++  hark::UpdateNativeFrameMaterialBackgroundView(background_view_, color_mode,
 +                                                  theme_color);
 +}
  
@@ -885,7 +885,7 @@
  #include "chrome/browser/ui/views/frame/glass_frame_service.h"
  #include "chrome/browser/ui/views/frame/system_menu_model_builder.h"
  #include "chrome/browser/ui/views/frame/top_container_view.h"
-+#include "chrome/browser/ui/views/helium/native_frame_materials.h"
++#include "chrome/browser/ui/views/hark/native_frame_materials.h"
  #include "chrome/browser/ui/web_applications/app_browser_controller.h"
  #include "chrome/common/chrome_switches.h"
  #include "ui/base/hit_test.h"
@@ -898,13 +898,13 @@
 -            browser_view_->browser())) {
 -      params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
 -    }
-+  if (features::HeliumNativeFrameAvailable()) {
++  if (features::HarkNativeFrameAvailable()) {
 +    params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
    }
  
    Init(std::move(params));
---- a/chrome/browser/ui/views/helium/BUILD.gn
-+++ b/chrome/browser/ui/views/helium/BUILD.gn
+--- a/chrome/browser/ui/views/hark/BUILD.gn
++++ b/chrome/browser/ui/views/hark/BUILD.gn
 @@ -48,4 +48,16 @@ source_set("native_frame_materials") {
      "//components/prefs",
      "//ui/views",
@@ -922,8 +922,8 @@
 +    ]
 +  }
  }
---- a/chrome/browser/ui/views/helium/native_frame_materials.cc
-+++ b/chrome/browser/ui/views/helium/native_frame_materials.cc
+--- a/chrome/browser/ui/views/hark/native_frame_materials.cc
++++ b/chrome/browser/ui/views/hark/native_frame_materials.cc
 @@ -45,8 +45,7 @@ bool ShouldUseNativeFrameMaterials(const
  }
  
@@ -933,23 +933,23 @@
 +  return true;
  }
  
- }  // namespace helium
+ }  // namespace hark
 --- /dev/null
-+++ b/chrome/browser/ui/views/helium/native_frame_materials_mac.h
++++ b/chrome/browser/ui/views/hark/native_frame_materials_mac.h
 @@ -0,0 +1,24 @@
 +// Copyright 2026 The Helium Authors
 +// You can use, redistribute, and/or modify this source code under
 +// the terms of the GPL-3.0 license that can be found in the LICENSE file.
 +
-+#ifndef CHROME_BROWSER_UI_VIEWS_HELIUM_NATIVE_FRAME_MATERIALS_MAC_H_
-+#define CHROME_BROWSER_UI_VIEWS_HELIUM_NATIVE_FRAME_MATERIALS_MAC_H_
++#ifndef CHROME_BROWSER_UI_VIEWS_HARK_NATIVE_FRAME_MATERIALS_MAC_H_
++#define CHROME_BROWSER_UI_VIEWS_HARK_NATIVE_FRAME_MATERIALS_MAC_H_
 +
 +#import <Cocoa/Cocoa.h>
 +
 +#include "third_party/skia/include/core/SkColor.h"
 +#include "ui/color/color_provider_key.h"
 +
-+namespace helium {
++namespace hark {
 +
 +NSView* CreateNativeFrameMaterialBackgroundView(NSRect frame);
 +
@@ -958,21 +958,21 @@
 +    ui::ColorProviderKey::ColorMode color_mode,
 +    SkColor theme_color);
 +
-+}  // namespace helium
++}  // namespace hark
 +
-+#endif  // CHROME_BROWSER_UI_VIEWS_HELIUM_NATIVE_FRAME_MATERIALS_MAC_H_
++#endif  // CHROME_BROWSER_UI_VIEWS_HARK_NATIVE_FRAME_MATERIALS_MAC_H_
 --- /dev/null
-+++ b/chrome/browser/ui/views/helium/native_frame_materials_mac.mm
++++ b/chrome/browser/ui/views/hark/native_frame_materials_mac.mm
 @@ -0,0 +1,115 @@
 +// Copyright 2026 The Helium Authors
 +// You can use, redistribute, and/or modify this source code under
 +// the terms of the GPL-3.0 license that can be found in the LICENSE file.
 +
-+#import "chrome/browser/ui/views/helium/native_frame_materials_mac.h"
++#import "chrome/browser/ui/views/hark/native_frame_materials_mac.h"
 +
 +#include "base/apple/foundation_util.h"
 +
-+namespace helium {
++namespace hark {
 +namespace {
 +
 +// Low-alpha black or white overlay applied before the browser theme tint.
@@ -1022,17 +1022,17 @@
 +}
 +
 +}  // namespace
-+}  // namespace helium
++}  // namespace hark
 +
 +// NSVisualEffectView intercepts hit testing even when added below the
 +// WebContents NSViews. Returning nil here lets clicks pass through to the
 +// sibling subviews that are supposed to receive them.
-+@interface HeliumFrameMaterialBackgroundView : NSVisualEffectView
++@interface HarkFrameMaterialBackgroundView : NSVisualEffectView
 +@property(nonatomic, strong) NSView* neutralOverlay;
 +@property(nonatomic, strong) NSView* themeTintOverlay;
 +@end
 +
-+@implementation HeliumFrameMaterialBackgroundView
++@implementation HarkFrameMaterialBackgroundView
 +
 +@synthesize neutralOverlay = _neutralOverlay;
 +@synthesize themeTintOverlay = _themeTintOverlay;
@@ -1042,11 +1042,11 @@
 +}
 +@end
 +
-+namespace helium {
++namespace hark {
 +
 +NSView* CreateNativeFrameMaterialBackgroundView(NSRect frame) {
-+  HeliumFrameMaterialBackgroundView* material_view =
-+      [[HeliumFrameMaterialBackgroundView alloc] initWithFrame:frame];
++  HarkFrameMaterialBackgroundView* material_view =
++      [[HarkFrameMaterialBackgroundView alloc] initWithFrame:frame];
 +  material_view.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
 +  material_view.blendingMode = NSVisualEffectBlendingModeBehindWindow;
 +  material_view.state = NSVisualEffectStateActive;
@@ -1065,7 +1065,7 @@
 +    ui::ColorProviderKey::ColorMode color_mode,
 +    SkColor theme_color) {
 +  auto* material_view =
-+      base::apple::ObjCCastStrict<HeliumFrameMaterialBackgroundView>(
++      base::apple::ObjCCastStrict<HarkFrameMaterialBackgroundView>(
 +          background_view);
 +  const bool is_dark = color_mode == ui::ColorProviderKey::ColorMode::kDark;
 +  material_view.material = GetFrameMaterial(is_dark);
@@ -1078,4 +1078,4 @@
 +      GetFrameMaterialThemeTintOverlayColor(theme_color, is_dark).CGColor;
 +}
 +
-+}  // namespace helium
++}  // namespace hark

@@ -1,4 +1,4 @@
-name: Build Helium for macOS
+name: Build Hark for macOS
 
 defaults:
   run:
@@ -26,7 +26,7 @@ on:
 
 jobs:
   build_job:
-    name: Build Helium for macOS
+    name: Build Hark for macOS
     runs-on: ${{ inputs.os }}
     outputs:
       status: ${{ steps.build.outputs.status }}
@@ -41,7 +41,7 @@ jobs:
         if: ${{ !inputs.resume }}
         uses: actions/download-artifact@v4
         with:
-          name: helium_macos_resources_${{ inputs.arch }}
+          name: hark_macos_resources_${{ inputs.arch }}
       - name: Unpack resources
         if: ${{ !inputs.resume }}
         run: ./github_unpack_resources.sh

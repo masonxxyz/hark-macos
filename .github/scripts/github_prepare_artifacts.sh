@@ -1,23 +1,23 @@
 #!/bin/bash -eux
-# Simple script for packing Helium macOS build artifacts on GitHub Actions
+# Simple script for packing Hark macOS build artifacts on GitHub Actions
 
 _target_cpu="${1:-x86_64}"
 
 _root_dir="$(dirname "$(greadlink -f "$0")")"
-_main_repo="$_root_dir/helium-chromium"
+_main_repo="$_root_dir/hark-chromium"
 _src_dir="$_root_dir/build/src"
 
 # If build finished successfully
 if [ -f "$_root_dir/build_finished_$_target_cpu.log" ]; then
   # For packaging
-  _helium_version=$(python3 "$_main_repo/utils/helium_version.py" --tree "$_main_repo" --platform-tree "$_root_dir" --print)
+  _hark_version=$(python3 "$_main_repo/utils/hark_version.py" --tree "$_main_repo" --platform-tree "$_root_dir" --print)
 
-  _file_name="helium_${_helium_version}_${_target_cpu}-macos.dmg"
+  _file_name="hark_${_hark_version}_${_target_cpu}-macos.dmg"
   _hash_name="${_file_name}.hashes.md"
 
   cd "$_src_dir"
 
-  xattr -cs out/Default/Helium.app
+  xattr -cs out/Default/Hark.app
 
   # Prepar the certificate for app signing
   echo $MACOS_CERTIFICATE | base64 --decode > "$TMPDIR/certificate.p12"

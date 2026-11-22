@@ -17,7 +17,7 @@
 -        base::BindOnce(promote_callback, PromotionState::PROMOTE_ENABLED),
 -        base::BindOnce(&updater::CheckForUpdate,
 -                       base::BindRepeating(&UpdateStatus, status_callback)));
-+    // Helium is updated by Sparkle, not by the Chromium updater.
++    // Hark is updated by Sparkle, not by the Chromium updater.
 +    status_callback.Run(VersionUpdater::Status::DISABLED, 0, false, false, "",
 +                        0, u"");
    }

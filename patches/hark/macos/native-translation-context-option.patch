@@ -16,8 +16,8 @@
      "main_menu_item.h",
      "profiles/profile_menu_controller.mm",
      "renderer_context_menu/chrome_swizzle_services_menu_updater.mm",
-+    "renderer_context_menu/helium_translate_popover.h",
-+    "renderer_context_menu/helium_translate_popover.mm",
++    "renderer_context_menu/hark_translate_popover.h",
++    "renderer_context_menu/hark_translate_popover.mm",
 +    "renderer_context_menu/native_translation_context_menu_mac.h",
 +    "renderer_context_menu/native_translation_context_menu_mac.mm",
      "renderer_context_menu/render_view_context_menu_mac.mm",
@@ -88,7 +88,7 @@
 +
 +#include "base/apple/foundation_util.h"
 +#include "base/strings/sys_string_conversions.h"
-+#import "chrome/browser/ui/cocoa/renderer_context_menu/helium_translate_popover.h"
++#import "chrome/browser/ui/cocoa/renderer_context_menu/hark_translate_popover.h"
 +#include "content/public/browser/context_menu_params.h"
 +#include "content/public/browser/render_frame_host.h"
 +#include "content/public/browser/render_widget_host.h"
@@ -344,9 +344,9 @@
 +    return;
 +  }
 +
-+  [HeliumTranslatePopover closeActivePopovers];
-+  HeliumTranslatePopover* popover_controller =
-+      [[HeliumTranslatePopover alloc] initWithPopover:popover
++  [HarkTranslatePopover closeActivePopovers];
++  HarkTranslatePopover* popover_controller =
++      [[HarkTranslatePopover alloc] initWithPopover:popover
 +                                           sourceView:source_view];
 +  [popover_controller showRelativeToRect:anchor.rect
 +                           preferredEdge:anchor.preferred_edge];
@@ -354,14 +354,14 @@
 +
 +}  // namespace native_translation_context_menu
 --- /dev/null
-+++ b/chrome/browser/ui/cocoa/renderer_context_menu/helium_translate_popover.h
++++ b/chrome/browser/ui/cocoa/renderer_context_menu/hark_translate_popover.h
 @@ -0,0 +1,32 @@
 +// Copyright 2026 The Helium Authors
 +// You can use, redistribute, and/or modify this source code under
 +// the terms of the GPL-3.0 license that can be found in the LICENSE file.
 +
-+#ifndef CHROME_BROWSER_UI_COCOA_RENDERER_CONTEXT_MENU_HELIUM_TRANSLATE_POPOVER_H_
-+#define CHROME_BROWSER_UI_COCOA_RENDERER_CONTEXT_MENU_HELIUM_TRANSLATE_POPOVER_H_
++#ifndef CHROME_BROWSER_UI_COCOA_RENDERER_CONTEXT_MENU_HARK_TRANSLATE_POPOVER_H_
++#define CHROME_BROWSER_UI_COCOA_RENDERER_CONTEXT_MENU_HARK_TRANSLATE_POPOVER_H_
 +
 +#import <Cocoa/Cocoa.h>
 +
@@ -370,7 +370,7 @@
 +// or the source window closes. The controller keeps itself alive (NSPopover's
 +// delegate is a weak reference) until the popover closes, so callers do not
 +// need to retain it.
-+@interface HeliumTranslatePopover : NSObject <NSPopoverDelegate>
++@interface HarkTranslatePopover : NSObject <NSPopoverDelegate>
 +
 +// Closes any translation popover that is currently visible. Keeps at most one
 +// popover alive so repeated context menu actions do not stack popovers.
@@ -387,37 +387,37 @@
 +
 +@end
 +
-+#endif  // CHROME_BROWSER_UI_COCOA_RENDERER_CONTEXT_MENU_HELIUM_TRANSLATE_POPOVER_H_
++#endif  // CHROME_BROWSER_UI_COCOA_RENDERER_CONTEXT_MENU_HARK_TRANSLATE_POPOVER_H_
 --- /dev/null
-+++ b/chrome/browser/ui/cocoa/renderer_context_menu/helium_translate_popover.mm
++++ b/chrome/browser/ui/cocoa/renderer_context_menu/hark_translate_popover.mm
 @@ -0,0 +1,125 @@
 +// Copyright 2026 The Helium Authors
 +// You can use, redistribute, and/or modify this source code under
 +// the terms of the GPL-3.0 license that can be found in the LICENSE file.
 +
-+#import "chrome/browser/ui/cocoa/renderer_context_menu/helium_translate_popover.h"
++#import "chrome/browser/ui/cocoa/renderer_context_menu/hark_translate_popover.h"
 +
 +namespace {
 +
 +// Strongly holds every visible controller so it stays alive until its popover
 +// closes. NSPopover.delegate is a weak reference, so without this the controller
 +// could be deallocated while its event monitors are still installed.
-+NSMutableSet<HeliumTranslatePopover*>* ActiveTranslatePopovers() {
-+  static NSMutableSet<HeliumTranslatePopover*>* controllers =
++NSMutableSet<HarkTranslatePopover*>* ActiveTranslatePopovers() {
++  static NSMutableSet<HarkTranslatePopover*>* controllers =
 +      [[NSMutableSet alloc] init];
 +  return controllers;
 +}
 +
 +}  // namespace
 +
-+@interface HeliumTranslatePopover ()
++@interface HarkTranslatePopover ()
 +- (void)close;
 +- (void)installEventMonitors;
 +- (void)tearDown;
 +- (void)closeForScrollEvent:(NSEvent*)event inWindow:(NSWindow*)window;
 +@end
 +
-+@implementation HeliumTranslatePopover {
++@implementation HarkTranslatePopover {
 +  NSPopover* _popover;
 +  NSView* _sourceView;
 +  id _scrollMonitor;
@@ -425,7 +425,7 @@
 +}
 +
 ++ (void)closeActivePopovers {
-+  for (HeliumTranslatePopover* controller in
++  for (HarkTranslatePopover* controller in
 +       [ActiveTranslatePopovers() allObjects]) {
 +    [controller close];
 +  }
@@ -463,7 +463,7 @@
 +
 +- (void)installEventMonitors {
 +  NSWindow* sourceWindow = _sourceView.window;
-+  __weak HeliumTranslatePopover* weakSelf = self;
++  __weak HarkTranslatePopover* weakSelf = self;
 +
 +  // Transient popovers close for many normal AppKit interactions, but scrolling
 +  // inside the web contents does not necessarily dismiss this private view.

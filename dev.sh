@@ -8,12 +8,12 @@ _root_dir=$(dirname $(greadlink -f $0))
 source "$_root_dir/devutils/shared.sh"
 source "$_root_dir/devutils/set_quilt_vars.sh"
 
-___helium_setup_presetup() {
+___hark_setup_presetup() {
     local download=true
     if [ $# -eq 1 ] && [ "$1" = -c ]; then
         download=false
     elif [ $# -ne 0 ]; then
-        echo "usage: he setup|presetup [-c]" >&2
+        echo "usage: hark setup|presetup [-c]" >&2
         return 1
     fi
 
@@ -28,17 +28,17 @@ ___helium_setup_presetup() {
     mkdir -p "$_out_dir"
     cd "$_src_dir"
     python3 "$_main_repo/utils/prune_binaries.py" --keep-build-dependencies "$_src_dir" "$_main_repo/pruning.list"
-    helium_resources
+    hark_resources
     write_gn_args "$_arch" dev
 
-    python3 "$_main_repo/utils/helium_version.py" \
+    python3 "$_main_repo/utils/hark_version.py" \
         --tree "$_main_repo" \
         --platform-tree "$_root_dir" \
         --chromium-tree "$_src_dir"
 }
 
-___helium_setup() {
-    ___helium_setup_presetup "$@"
+___hark_setup() {
+    ___hark_setup_presetup "$@"
 
     "$_root_dir/devutils/update_patches.sh" merge
 
@@ -48,7 +48,7 @@ ___helium_setup() {
     gn_gen --export-compile-commands
 }
 
-___helium_reset() {
+___hark_reset() {
     "$_root_dir/devutils/update_patches.sh" unmerge || true
     rm "$_subs_cache" || true
     rm "$_namesubs_cache" || true
@@ -57,7 +57,7 @@ ___helium_reset() {
     fi
 }
 
-___helium_name_substitution() {
+___hark_name_substitution() {
     if [ "$1" = "nameunsub" ]; then
         python3 "$_main_repo/utils/name_substitution.py" --unsub \
             -t "$_src_dir" --backup-path "$_namesubs_cache"
@@ -76,20 +76,20 @@ ___helium_name_substitution() {
     fi
 }
 
-___helium_apply_translations() {
+___hark_apply_translations() {
     python3 "$_main_repo/utils/i18n_apply.py" -t "$_src_dir"
 }
 
-___helium_generate_translations() {
+___hark_generate_translations() {
     python3 "$_main_repo/devutils/i18n.py" generate
 }
 
-___helium_substitution() {
+___hark_substitution() {
     if [ "$1" = "unsub" ]; then
         python3 "$_main_repo/utils/domain_substitution.py" revert \
             -c "$_subs_cache" "$_src_dir"
 
-        ___helium_name_substitution nameunsub
+        ___hark_name_substitution nameunsub
     elif [ "$1" = "sub" ]; then
         if [ -f "$_subs_cache" ]; then
             echo "$_subs_cache exists, are you sure you want to do this?" >&2
@@ -97,7 +97,7 @@ ___helium_substitution() {
             return
         fi
 
-        ___helium_name_substitution namesub
+        ___hark_name_substitution namesub
 
         python3 "$_main_repo/utils/domain_substitution.py" apply \
             -r "$_main_repo/domain_regex.list" \
@@ -110,23 +110,23 @@ ___helium_substitution() {
     fi
 }
 
-___helium_build() {
+___hark_build() {
     local -a siso_flags=(${=SISO_FLAGS:-})
     cd "$_src_dir"
     if [ -n "${SISO_REAPI_ADDRESS:-}" ]; then
         configure_siso || return
     fi
-    helium_build -k 0 "${siso_flags[@]}" "$@"
+    hark_build -k 0 "${siso_flags[@]}" "$@"
 }
 
-___helium_run() {
-    local profile="$HOME/Library/Application Support/net.imput.helium.dev"
+___hark_run() {
+    local profile="$HOME/Library/Application Support/com.cognify.hark.dev"
     # .git is a file in linked worktrees, and a directory in the main checkout
     if [ -f "$_root_dir/.git" ]; then
         profile="$profile.wt/${_root_dir#*.wt/}"
     fi
 
-    "$_out_dir/Helium.app/Contents/MacOS/Helium" \
+    "$_out_dir/Hark.app/Contents/MacOS/Hark" \
     --user-data-dir="$profile" \
     --enable-ui-devtools \
     --use-mock-keychain \
@@ -134,15 +134,15 @@ ___helium_run() {
     "$@"
 }
 
-___helium_wt_path() {
+___hark_wt_path() {
     local common
     common=$(git -C "$_root_dir" rev-parse --path-format=absolute --git-common-dir)
     echo "${common:h}.wt/$1"
 }
 
-___helium_wt_new() {
-    local name=${1:?usage: he wt new <name>} dest
-    dest=$(___helium_wt_path "$name")
+___hark_wt_new() {
+    local name=${1:?usage: hark wt new <name>} dest
+    dest=$(___hark_wt_path "$name")
     if [ ! -f "$_root_dir/patches/series.merged" ] || [ ! -d "$_src_dir/.pc" ]; then
         echo "$_src_dir must be set up with merged patches applied" >&2
         return 1
@@ -155,12 +155,12 @@ ___helium_wt_new() {
     fi
 
     git -C "$_root_dir" worktree add -b "$name" "$dest" HEAD
-    git -C "$_main_repo" worktree add -b "$name" "$dest/helium-chromium" HEAD
+    git -C "$_main_repo" worktree add -b "$name" "$dest/hark-chromium" HEAD
 
-    git -C "$_root_dir" diff --binary HEAD -- . ":!patches" ":!helium-chromium" \
+    git -C "$_root_dir" diff --binary HEAD -- . ":!patches" ":!hark-chromium" \
         | git -C "$dest" apply --allow-empty
     git -C "$_main_repo" diff --binary HEAD -- . ":!patches" \
-        | git -C "$dest/helium-chromium" apply --allow-empty
+        | git -C "$dest/hark-chromium" apply --allow-empty
 
     rm -rf "$dest/patches"
     /bin/cp -c -R "$_root_dir/patches" "$dest/patches"
@@ -173,32 +173,32 @@ ___helium_wt_new() {
     done
 
     printf '%s\n' "$dest/patches" > "$dest/build/src/.pc/.quilt_patches"
-    (cd "$dest" && source ./dev.sh && he configure)
+    (cd "$dest" && source ./dev.sh && hark configure)
 }
 
-___helium_wt_rm() {
+___hark_wt_rm() {
     local dest
-    dest=$(___helium_wt_path "${1:?usage: he wt rm <name>}")
+    dest=$(___hark_wt_path "${1:?usage: hark wt rm <name>}")
     [ -f "$dest/.git" ] || { echo "$dest is not a worktree" >&2; return 1; }
     rm -rf "$dest/build"
-    git -C "$_main_repo" worktree remove --force "$dest/helium-chromium" || true
+    git -C "$_main_repo" worktree remove --force "$dest/hark-chromium" || true
     git -C "$_root_dir" worktree remove --force "$dest"
 }
 
-___helium_wt() {
+___hark_wt() {
     case "${1:-}" in
-        new) shift; ___helium_wt_new "$@";;
-        rm) shift; ___helium_wt_rm "$@";;
+        new) shift; ___hark_wt_new "$@";;
+        rm) shift; ___hark_wt_rm "$@";;
         ls) git -C "$_root_dir" worktree list;;
         *)
-            echo "usage: he wt <new <name>|rm <name>|ls>" >&2
+            echo "usage: hark wt <new <name>|rm <name>|ls>" >&2
             return 1
     esac
 }
 
-___helium_pull() {
+___hark_pull() {
     if [ -f "$_subs_cache" ]; then
-        echo "source files are substituted, please run 'he unsub' first" >&2
+        echo "source files are substituted, please run 'hark unsub' first" >&2
         return 1
     fi
 
@@ -217,23 +217,23 @@ ___helium_pull() {
     cd "$_src_dir" && quilt push -a --refresh
 }
 
-___helium_patches_merge() {
+___hark_patches_merge() {
     "$_root_dir/devutils/update_patches.sh" merge
 }
 
-___helium_patches_unmerge() {
+___hark_patches_unmerge() {
     "$_root_dir/devutils/update_patches.sh" unmerge
 }
 
-___helium_quilt_push() {
+___hark_quilt_push() {
     cd "$_src_dir" && quilt push -a --refresh
 }
 
-___helium_quilt_pop() {
+___hark_quilt_pop() {
     cd "$_src_dir" && quilt pop -a
 }
 
-___helium_validate() {
+___hark_validate() {
     if [ "$1" = "config" ]; then
         python3 "$_main_repo/devutils/validate_config.py"
     elif [ "$1" = "patches" ]; then
@@ -247,17 +247,17 @@ ___helium_validate() {
     elif [ "$1" = "series" ]; then
         "$_root_dir/devutils/check_patch_files.sh"
     else
-        echo "unknown validate action. usage: he validate <config|patches|series>" >&2
+        echo "unknown validate action. usage: hark validate <config|patches|series>" >&2
     fi
 }
 
-___helium_format() {
+___hark_format() {
     cd "$_src_dir"
     quilt diff | "$_src_dir/third_party/clang-format/script/clang-format-diff.py" \
     -p1 -i -style=file
 }
 
-___helium_find_tidy_diff() {
+___hark_find_tidy_diff() {
     if [ -n "$_tidy_diff_script" ]; then
         return
     elif command -v clang-tidy-diff >/dev/null 2>&1; then
@@ -275,7 +275,7 @@ ___helium_find_tidy_diff() {
     fi
 }
 
-___helium_strip_compile_commands() {
+___hark_strip_compile_commands() {
     _ccmd_path="$_out_dir/compile_commands.json"
     [ "$_ccmd_stripped" = 1 ] && return;
     _ccmd_stripped=1
@@ -285,9 +285,9 @@ ___helium_strip_compile_commands() {
     gsed -Ei 's/^(\s*"command": ").*?\s(\S+bin\/clang)/\1\2/g' "$_ccmd_path"
 }
 
-___helium_tidy() {
-    ___helium_find_tidy_diff || return;
-    ___helium_strip_compile_commands;
+___hark_tidy() {
+    ___hark_find_tidy_diff || return;
+    ___hark_strip_compile_commands;
     quilt diff | "$_tidy_diff_script" \
         -regex '.*\.(cc|mm)' \
         -use-color \
@@ -297,46 +297,46 @@ ___helium_tidy() {
         -j$(nproc)
 }
 
-___helium_lint() {
-    ___helium_format;
-    ___helium_tidy;
+___hark_lint() {
+    ___hark_format;
+    ___hark_tidy;
 }
 
-___helium_menu() {
+___hark_menu() {
     set -e
     case $1 in
-        setup) shift; ___helium_setup "$@";;
-        presetup) shift; ___helium_setup_presetup "$@";;
+        setup) shift; ___hark_setup "$@";;
+        presetup) shift; ___hark_setup_presetup "$@";;
         configure) gn_gen --export-compile-commands;;
-        resources) helium_resources;;
+        resources) hark_resources;;
 
-        sub|unsub) ___helium_substitution "$1";;
-        namesub|nameunsub) ___helium_name_substitution "$1";;
-        translate) ___helium_apply_translations;;
-        transgen) ___helium_generate_translations;;
+        sub|unsub) ___hark_substitution "$1";;
+        namesub|nameunsub) ___hark_name_substitution "$1";;
+        translate) ___hark_apply_translations;;
+        transgen) ___hark_generate_translations;;
 
-        merge) ___helium_patches_merge;;
-        unmerge) ___helium_patches_unmerge;;
-        push) ___helium_quilt_push;;
-        pop) ___helium_quilt_pop;;
-        pull) ___helium_pull;;
+        merge) ___hark_patches_merge;;
+        unmerge) ___hark_patches_unmerge;;
+        push) ___hark_quilt_push;;
+        pop) ___hark_quilt_pop;;
+        pull) ___hark_pull;;
 
-        validate) ___helium_validate "$2";;
-        format) ___helium_format;;
-        tidy) ___helium_tidy;;
-        lint) ___helium_lint;;
+        validate) ___hark_validate "$2";;
+        format) ___hark_format;;
+        tidy) ___hark_tidy;;
+        lint) ___hark_lint;;
 
-        build) shift; ___helium_build "$@";;
-        run) shift; ___helium_run "$@";;
-        reset) ___helium_reset;;
-        wt) shift; ___helium_wt "$@";;
+        build) shift; ___hark_build "$@";;
+        run) shift; ___hark_run "$@";;
+        reset) ___hark_reset;;
+        wt) shift; ___hark_wt "$@";;
         *)
-            echo "usage: he <command>" >&2
+            echo "usage: hark <command>" >&2
             echo "\tsetup [-c] - sets up the dev environment, optionally cloning Chromium" >&2
             echo "\t         equivalent of: [presetup, merge, push, configure]" >&2
             echo "\tpresetup [-c] - prepares sources and dependencies, optionally cloning Chromium" >&2
             echo "\tconfigure - generates build configuration and tools" >&2
-            echo "\tresources - generates and copies helium resources (such as icons)" >&2
+            echo "\tresources - generates and copies hark resources (such as icons)" >&2
 
             echo "\n" >&2
             echo "\tsub - apply google domain and name substitutions" >&2
@@ -359,11 +359,11 @@ ___helium_menu() {
             echo "\tvalidate series - checks the consistency of the series file" >&2
             echo "\tformat - formats the topmost patch according to Chromium coding style" >&2
             echo "\ttidy - runs clang-tidy on the topmost patch" >&2
-            echo "\tlint - he format + he tidy" >&2
+            echo "\tlint - hark format + hark tidy" >&2
 
             echo "\n" >&2
             echo "\tbuild - builds a development binary" >&2
-            echo "\trun [args] - runs a development build of helium with dev data dir & ui devtools enabled" >&2
+            echo "\trun [args] - runs a development build of hark with dev data dir & ui devtools enabled" >&2
             echo "\treset - nukes everything" >&2
 
             echo "\n" >&2
@@ -373,16 +373,16 @@ ___helium_menu() {
     esac
 }
 
-he() {
-    (___helium_menu "$@")
+hark() {
+    (___hark_menu "$@")
 }
 
 if ! (return 0 2>/dev/null); then
-    printf "usage:\n\t$ source dev.sh\n\t$ he\n" 2>&1
+    printf "usage:\n\t$ source dev.sh\n\t$ hark\n" 2>&1
     exit 1
 else
-    if [ "$__helium_loaded" = "" ]; then
-        __helium_loaded=1
-        PS1="🎈 $PS1"
+    if [ "$__hark_loaded" = "" ]; then
+        __hark_loaded=1
+        PS1="📯 $PS1"
     fi
 fi

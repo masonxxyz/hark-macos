@@ -1,6 +1,6 @@
 #!/bin/bash -eux
 
-# Simple script for setting up all toolchain dependencies for building Helium on macOS
+# Simple script for setting up all toolchain dependencies for building Hark on macOS
 
 brew install coreutils zstd --overwrite
 

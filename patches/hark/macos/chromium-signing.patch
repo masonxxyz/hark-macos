@@ -6,7 +6,7 @@
      if sign_framework:
 +        sparkle = '{.framework_dir}/Frameworks/Sparkle.framework'.format(config)
 +        if os.path.isdir(os.path.join(paths.work, sparkle)):
-+            # Helium builds Sparkle without its optional XPC services.
++            # Hark builds Sparkle without its optional XPC services.
 +            for name, identifier in (
 +                ('Autoupdate', 'org.sparkle-project.Sparkle.Autoupdate'),
 +                ('Updater.app', 'org.sparkle-project.Sparkle.Updater'),
@@ -30,7 +30,7 @@
                  _staple_chrome(notary_paths.replace_work(dest_dir), dist_config)
  
 +        # Notarized apps remain in the temporary work directory. Export them
-+        # before it is deleted so Helium's separate DMG packaging step can use
++        # before it is deleted so Hark's separate DMG packaging step can use
 +        # the signed app, including its stapled ticket when requested.
 +        if disable_packaging and config.notarize.should_notarize():
 +            for dist_config in dist_configs:
@@ -99,7 +99,7 @@
      @property
      def provisioning_profile_basename(self):
 +        if os.environ.get('PROD_MACOS_SPECIAL_ENTITLEMENTS_PROFILE_PATH'):
-+            return 'Helium'
++            return 'Hark'
          return None
 --- a/chrome/installer/mac/signing/model.py
 +++ b/chrome/installer/mac/signing/model.py
@@ -108,7 +108,7 @@
                          profile_basename, this.app_name_fragment
                      )
 -                if base_config.identity:
-+                # Helium stages its profile as Helium.provisionprofile.
++                # Hark stages its profile as Hark.provisionprofile.
 +                if base_config.is_chrome_branded() and base_config.identity:
                      profile_basename = '{}.{}'.format(
                          profile_basename,

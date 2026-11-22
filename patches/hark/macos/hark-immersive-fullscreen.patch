@@ -6,7 +6,7 @@
  - (void)setAlwaysShowTrafficLights:(BOOL)alwaysShow;
 +
 +// Hide AppKit's fullscreen overlay and pass mouse events through it while
-+// Helium hosts the controls in its tab strip or toolbar.
++// Hark hosts the controls in its tab strip or toolbar.
 +- (void)setAppKitFullscreenOverlaySuppressed:(BOOL)suppressed;
 +
  // A controller that keeps a small portion (0.5px) of the fullscreen AppKit
@@ -22,7 +22,7 @@
 +@implementation BrowserNativeWidgetWindow {
 +  BOOL _appKitFullscreenOverlaySuppressed;
 +  NSWindow* __weak _appKitFullscreenOverlayWindow;
-+  // AppKit state to restore when Helium stops hosting the controls.
++  // AppKit state to restore when Hark stops hosting the controls.
 +  BOOL _savedToolbarWindowIgnoresMouseEvents;
 +  BOOL _savedToolbarFrameHidden;
 +}
@@ -79,34 +79,34 @@
 +
  @end
 --- /dev/null
-+++ b/chrome/browser/ui/views/helium/fullscreen_window_controls_mac.h
++++ b/chrome/browser/ui/views/hark/fullscreen_window_controls_mac.h
 @@ -0,0 +1,18 @@
 +// Copyright 2026 The Helium Authors
 +// You can use, redistribute, and/or modify this source code under
 +// the terms of the GPL-3.0 license that can be found in the LICENSE file.
 +
-+#ifndef CHROME_BROWSER_UI_VIEWS_HELIUM_FULLSCREEN_WINDOW_CONTROLS_MAC_H_
-+#define CHROME_BROWSER_UI_VIEWS_HELIUM_FULLSCREEN_WINDOW_CONTROLS_MAC_H_
++#ifndef CHROME_BROWSER_UI_VIEWS_HARK_FULLSCREEN_WINDOW_CONTROLS_MAC_H_
++#define CHROME_BROWSER_UI_VIEWS_HARK_FULLSCREEN_WINDOW_CONTROLS_MAC_H_
 +
 +#import <Cocoa/Cocoa.h>
 +
-+// Native traffic lights hosted in Helium's tab strip or toolbar. The system
++// Native traffic lights hosted in Hark's tab strip or toolbar. The system
 +// titlebar is restored when entering content fullscreen or leaving fullscreen.
-+@interface HeliumFullscreenWindowControls : NSView
++@interface HarkFullscreenWindowControls : NSView
 +- (instancetype)initWithWindow:(NSWindow*)window size:(NSSize)size;
 +- (void)hideTitlebarButtons;
 +- (void)restoreTitlebarButtons;
 +@end
 +
-+#endif  // CHROME_BROWSER_UI_VIEWS_HELIUM_FULLSCREEN_WINDOW_CONTROLS_MAC_H_
++#endif  // CHROME_BROWSER_UI_VIEWS_HARK_FULLSCREEN_WINDOW_CONTROLS_MAC_H_
 --- /dev/null
-+++ b/chrome/browser/ui/views/helium/fullscreen_window_controls_mac.mm
++++ b/chrome/browser/ui/views/hark/fullscreen_window_controls_mac.mm
 @@ -0,0 +1,150 @@
 +// Copyright 2026 The Helium Authors
 +// You can use, redistribute, and/or modify this source code under
 +// the terms of the GPL-3.0 license that can be found in the LICENSE file.
 +
-+#import "chrome/browser/ui/views/helium/fullscreen_window_controls_mac.h"
++#import "chrome/browser/ui/views/hark/fullscreen_window_controls_mac.h"
 +
 +#include <iterator>
 +
@@ -115,11 +115,11 @@
 +
 +// Native titlebar buttons cache their presentation separately from NSView's
 +// display invalidation. Let AppKit refresh that state when group hover changes.
-+@interface NSButton (HeliumFullscreenWindowControlsHover)
++@interface NSButton (HarkFullscreenWindowControlsHover)
 +- (void)mouseEnteredOrExited;
 +@end
 +
-+@implementation HeliumFullscreenWindowControls {
++@implementation HarkFullscreenWindowControls {
 +  BrowserNativeWidgetWindow* __weak _browserWindow;
 +  NSDictionary<NSNumber*, NSNumber*>* _originalWindowButtonHiddenStates;
 +  BOOL _mouseInsideControls;
@@ -156,7 +156,7 @@
 +  _originalWindowButtonHiddenStates = hiddenStates;
 +
 +  // Create ordinary window buttons even while AppKit's fullscreen titlebar
-+  // is hidden. Their visibility is controlled by Helium's toolbar instead.
++  // is hidden. Their visibility is controlled by Hark's toolbar instead.
 +  const bool rtl = window.windowTitlebarLayoutDirection ==
 +                   NSUserInterfaceLayoutDirectionRightToLeft;
 +  for (size_t i = 0; i < std::size(buttons); ++i) {
@@ -258,12 +258,12 @@
        "//chrome/browser/picture_in_picture",
        "//chrome/browser/profiles:profile",
        "//chrome/browser/themes",
-+      "//chrome/browser/ui/views/helium:fullscreen_window_controls_mac",
++      "//chrome/browser/ui/views/hark:fullscreen_window_controls_mac",
        "//chrome/browser/ui:fullscreen_util_mac",
        "//chrome/browser/ui:layout_constants",
        "//chrome/browser/ui:view_ids",
---- a/chrome/browser/ui/views/helium/BUILD.gn
-+++ b/chrome/browser/ui/views/helium/BUILD.gn
+--- a/chrome/browser/ui/views/hark/BUILD.gn
++++ b/chrome/browser/ui/views/hark/BUILD.gn
 @@ -20,6 +20,19 @@ source_set("frame_corner_radius") {
    }
  }
@@ -290,8 +290,8 @@
    // them in the layout for exclusion area calculations.
    virtual void SetCaptionButtonsOpacity(float opacity) {}
  
-+  // Updates the bounds and visibility of Helium Fullscreen window controls.
-+  virtual void UpdateHeliumFullscreenWindowControls() {}
++  // Updates the bounds and visibility of Hark Fullscreen window controls.
++  virtual void UpdateHarkFullscreenWindowControls() {}
 +
    // Signals that the frame's minimum size may have changed. This prompts the
    // widget to update its size constraints by re-querying `GetMinimumSize()`.
@@ -302,7 +302,7 @@
  }
  
  @class FullscreenToolbarController;
-+@class HeliumFullscreenWindowControls;
++@class HarkFullscreenWindowControls;
 +
 +namespace views {
 +class NativeViewHost;
@@ -314,7 +314,7 @@
    void UpdateMinimumSize() override;
    void WindowControlsOverlayEnabledChanged() override;
    void SetCaptionButtonsOpacity(float opacity) override;
-+  void UpdateHeliumFullscreenWindowControls() override;
++  void UpdateHarkFullscreenWindowControls() override;
  
    // views::View:
    gfx::Size GetMinimumSize() const override;
@@ -322,9 +322,9 @@
    FRIEND_TEST_ALL_PREFIXES(BrowserFrameViewMacTest,
                             GetCaptionButtonPlaceholderBounds);
  
-+  // Whether this fullscreen session uses Helium Fullscreen window controls.
++  // Whether this fullscreen session uses Hark Fullscreen window controls.
 +  // Content fullscreen temporarily hides them without changing this result.
-+  bool ShouldUseHeliumFullscreenWindowControls() const;
++  bool ShouldUseHarkFullscreenWindowControls() const;
 +
    // Calculate the y offset the top UI needs to shift down due to showing the
    // slide down menu bar at the very top in full screen.
@@ -335,8 +335,8 @@
  
 +  // Child view hosting the native controls across fullscreen sessions.
 +  // The native controls are released when fullscreen ends.
-+  raw_ptr<views::NativeViewHost> helium_fullscreen_controls_host_ = nullptr;
-+  HeliumFullscreenWindowControls* __strong helium_fullscreen_controls_ = nil;
++  raw_ptr<views::NativeViewHost> hark_fullscreen_controls_host_ = nullptr;
++  HarkFullscreenWindowControls* __strong hark_fullscreen_controls_ = nil;
 +
    // Mark the start of a fullscreen session. Applies to both immersive and
    // standard fullscreen.
@@ -347,7 +347,7 @@
  #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
  #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
  #include "chrome/browser/ui/fullscreen_util_mac.h"
-+#include "chrome/browser/ui/helium/helium_layout_state_controller.h"
++#include "chrome/browser/ui/hark/hark_layout_state_controller.h"
  #include "chrome/browser/ui/immersive/immersive_mode_controller.h"
  #include "chrome/browser/ui/layout_constants.h"
  #include "chrome/browser/ui/tabs/tab_style.h"
@@ -355,7 +355,7 @@
  #include "chrome/browser/ui/views/frame/caption_button_placeholder_container.h"
  #include "chrome/browser/ui/views/frame/glass_frame_service.h"
  #include "chrome/browser/ui/views/frame/tab_strip_region_view.h"
-+#import "chrome/browser/ui/views/helium/fullscreen_window_controls_mac.h"
++#import "chrome/browser/ui/views/hark/fullscreen_window_controls_mac.h"
  #include "chrome/browser/ui/views/tabs/tab_strip.h"
  #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
  #include "chrome/browser/ui/views/web_apps/frame_toolbar/web_app_frame_toolbar_utils.h"
@@ -371,9 +371,9 @@
  }
  
  BrowserFrameViewMac::~BrowserFrameViewMac() {
-+  [helium_fullscreen_controls_ restoreTitlebarButtons];
-+  if (helium_fullscreen_controls_host_) {
-+    helium_fullscreen_controls_host_->Detach();
++  [hark_fullscreen_controls_ restoreTitlebarButtons];
++  if (hark_fullscreen_controls_host_) {
++    hark_fullscreen_controls_host_->Detach();
 +  }
    if ([fullscreen_toolbar_controller_ isInFullscreen]) {
      [fullscreen_toolbar_controller_ exitFullscreenMode];
@@ -401,7 +401,7 @@
    auto params = BrowserFrameView::GetBrowserLayoutParams();
 -  if (GetBrowserView()->IsFullscreen()) {
 +  const bool keep_caption_exclusion =
-+      ShouldUseHeliumFullscreenWindowControls() &&
++      ShouldUseHarkFullscreenWindowControls() &&
 +      !fullscreen_utils::IsInContentFullscreen(GetBrowserView()->browser());
 +  if (GetBrowserView()->IsFullscreen() && !keep_caption_exclusion) {
      // No insets for caption buttons in fullscreen, since caption buttons are on
@@ -411,7 +411,7 @@
  }
  
  void BrowserFrameViewMac::SetCaptionButtonsOpacity(float opacity) {
-+  helium_fullscreen_controls_.alphaValue = opacity;
++  hark_fullscreen_controls_.alphaValue = opacity;
    NSWindow* window = GetWidget()->GetNativeWindow().GetNativeNSWindow();
    if (!window) {
      return;
@@ -419,19 +419,19 @@
    }
  }
  
-+bool BrowserFrameViewMac::ShouldUseHeliumFullscreenWindowControls() const {
++bool BrowserFrameViewMac::ShouldUseHarkFullscreenWindowControls() const {
 +  const auto* browser_view = GetBrowserView();
 +  return browser_view->GetIsNormalType() && browser_view->IsFullscreen();
 +}
 +
-+void BrowserFrameViewMac::UpdateHeliumFullscreenWindowControls() {
++void BrowserFrameViewMac::UpdateHarkFullscreenWindowControls() {
 +  auto* browser_view = GetBrowserView();
-+  if (!ShouldUseHeliumFullscreenWindowControls()) {
-+    if (helium_fullscreen_controls_) {
-+      helium_fullscreen_controls_host_->SetVisible(false);
-+      helium_fullscreen_controls_host_->Detach();
-+      [helium_fullscreen_controls_ restoreTitlebarButtons];
-+      helium_fullscreen_controls_ = nil;
++  if (!ShouldUseHarkFullscreenWindowControls()) {
++    if (hark_fullscreen_controls_) {
++      hark_fullscreen_controls_host_->SetVisible(false);
++      hark_fullscreen_controls_host_->Detach();
++      [hark_fullscreen_controls_ restoreTitlebarButtons];
++      hark_fullscreen_controls_ = nil;
 +    }
 +    return;
 +  }
@@ -443,36 +443,36 @@
 +  // Content fullscreen uses AppKit's titlebar. Keep the hosted controls for
 +  // returning to browser fullscreen, but restore the native titlebar and input.
 +  if (fullscreen_utils::IsInContentFullscreen(browser_view->browser())) {
-+    if (helium_fullscreen_controls_host_) {
-+      helium_fullscreen_controls_host_->SetVisible(false);
-+      [helium_fullscreen_controls_ restoreTitlebarButtons];
++    if (hark_fullscreen_controls_host_) {
++      hark_fullscreen_controls_host_->SetVisible(false);
++      [hark_fullscreen_controls_ restoreTitlebarButtons];
 +    }
 +    return;
 +  }
-+  if (!helium_fullscreen_controls_host_) {
-+    helium_fullscreen_controls_host_ =
++  if (!hark_fullscreen_controls_host_) {
++    hark_fullscreen_controls_host_ =
 +        AddChildView(std::make_unique<views::NativeViewHost>());
-+    helium_fullscreen_controls_host_->SetVisible(false);
++    hark_fullscreen_controls_host_->SetVisible(false);
 +  }
 +  const gfx::Rect caption = gfx::ToEnclosingRect(GetCaptionButtonBounds().bounds);
-+  if (!helium_fullscreen_controls_) {
-+    helium_fullscreen_controls_ = [[HeliumFullscreenWindowControls alloc]
++  if (!hark_fullscreen_controls_) {
++    hark_fullscreen_controls_ = [[HarkFullscreenWindowControls alloc]
 +        initWithWindow:window
 +                  size:NSMakeSize(caption.width(), caption.height())];
-+    helium_fullscreen_controls_host_->Attach(
-+        gfx::NativeView(helium_fullscreen_controls_));
++    hark_fullscreen_controls_host_->Attach(
++        gfx::NativeView(hark_fullscreen_controls_));
 +  }
-+  [helium_fullscreen_controls_ hideTitlebarButtons];
++  [hark_fullscreen_controls_ hideTitlebarButtons];
 +
 +  const auto* controller =
-+      HeliumLayoutStateController::From(browser_view->browser());
++      HarkLayoutStateController::From(browser_view->browser());
 +  const bool in_tab_strip = !controller || controller->IsClassicLayout();
 +  views::View* controls_row = in_tab_strip
 +                                  ? static_cast<views::View*>(
 +                                        browser_view->tab_strip_view())
 +                                  : browser_view->toolbar();
 +  if (!controls_row) {
-+    helium_fullscreen_controls_host_->SetVisible(false);
++    hark_fullscreen_controls_host_->SetVisible(false);
 +    return;
 +  }
 +  const gfx::Rect row_bounds = views::View::ConvertRectToTarget(
@@ -481,14 +481,14 @@
 +  // logical bounds, moving only vertically with that row's reveal animation.
 +  gfx::Rect bounds = caption;
 +  bounds.Offset(0, row_bounds.y());
-+  helium_fullscreen_controls_host_->SetBoundsRect(bounds);
-+  helium_fullscreen_controls_.alphaValue = browser_view->GetTopChromeRevealRatio();
-+  helium_fullscreen_controls_host_->SetVisible(
++  hark_fullscreen_controls_host_->SetBoundsRect(bounds);
++  hark_fullscreen_controls_.alphaValue = browser_view->GetTopChromeRevealRatio();
++  hark_fullscreen_controls_host_->SetVisible(
 +      (in_tab_strip ? browser_view->GetTabStripVisible()
 +                    : browser_view->IsToolbarVisible()) &&
 +      controls_row->IsDrawn() && row_bounds.height() >= caption.bottom() &&
 +      GetLocalBounds().Contains(bounds) &&
-+      helium_fullscreen_controls_.alphaValue > 0);
++      hark_fullscreen_controls_.alphaValue > 0);
 +}
 +
  ///////////////////////////////////////////////////////////////////////////////
@@ -498,9 +498,9 @@
  }
  
  int BrowserFrameViewMac::NonClientHitTest(const gfx::Point& point) {
-+  if (helium_fullscreen_controls_host_ &&
-+      helium_fullscreen_controls_host_->IsDrawn() &&
-+      helium_fullscreen_controls_host_->GetMirroredBounds().Contains(point)) {
++  if (hark_fullscreen_controls_host_ &&
++      hark_fullscreen_controls_host_->IsDrawn() &&
++      hark_fullscreen_controls_host_->GetMirroredBounds().Contains(point)) {
 +    // The reserved space is otherwise treated as draggable frame background,
 +    // which prevents BridgedContentView from hit-testing the native buttons.
 +    return HTCLIENT;
@@ -517,7 +517,7 @@
 -                                       styleMask:NSWindowStyleMaskTitled]);
 +  // Hosted controls need no extra titlebar space below the menu bar.
 +  CGFloat title_bar_height = 0;
-+  if (!ShouldUseHeliumFullscreenWindowControls() ||
++  if (!ShouldUseHarkFullscreenWindowControls() ||
 +      fullscreen_utils::IsInContentFullscreen(GetBrowserView()->browser())) {
 +    title_bar_height =
 +        NSHeight([NSWindow frameRectForContentRect:NSZeroRect
@@ -643,7 +643,7 @@
  
    // TODO(jamescook): Why was this in the middle of layout code?
    toolbar_->location_bar()->UpdateFocusBehavior(IsToolbarVisible());
-+  GetFrameView()->UpdateHeliumFullscreenWindowControls();
++  GetFrameView()->UpdateHarkFullscreenWindowControls();
    GetFrameView()->UpdateMinimumSize();
  
    if (omnibox::IsWebUIOmniboxInBrowserViewEnabled()) {

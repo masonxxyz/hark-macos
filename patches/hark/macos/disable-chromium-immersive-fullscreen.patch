@@ -84,7 +84,7 @@
 -  bool show_toolbar = prefs->GetBoolean(prefs::kShowFullscreenToolbar);
 -  prefs->SetBoolean(prefs::kShowFullscreenToolbar, !show_toolbar);
 +void ToggleAlwaysShowToolbarInFullscreen(BrowserWindowInterface*) {
-+  // Helium controls fullscreen toolbar visibility through its layout and Zen mode.
++  // Hark controls fullscreen toolbar visibility through its layout and Zen mode.
  }
  
  void SetAlwaysShowToolbarInFullscreenForTesting(
@@ -138,7 +138,7 @@
 -  }
 -  return browser_window_interface->GetProfile()->GetPrefs()->GetBoolean(
 -      prefs::kShowFullscreenToolbar);
-+  // Keep the toolbar available to Helium's layout and Zen mode, independently
++  // Keep the toolbar available to Hark's layout and Zen mode, independently
 +  // of the legacy profile or web app fullscreen toolbar setting.
 +  return true;
  }

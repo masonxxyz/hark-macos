@@ -34,7 +34,7 @@ let
   gsed = writeShellScriptBin "gsed" ''exec ${gnused}/bin/sed "$@"'';
 
   resolveXcode = ''
-    xcode="''${HELIUM_XCODE:-$(/usr/bin/env -u DEVELOPER_DIR /usr/bin/xcode-select -p 2>/dev/null || true)}"
+    xcode="''${HARK_XCODE:-$(/usr/bin/env -u DEVELOPER_DIR /usr/bin/xcode-select -p 2>/dev/null || true)}"
     case "$xcode" in
       *.app) xcode="$xcode/Contents/Developer" ;;
     esac
@@ -46,7 +46,7 @@ let
   '';
 
   xcodeSetup = writeShellApplication {
-    name = "helium-xcode-setup";
+    name = "hark-xcode-setup";
     runtimeInputs = [
       xcodes
       aria2
@@ -59,8 +59,8 @@ let
         echo "==> installing Xcode $version via xcodes (Apple ID login required)"
         xcodes install "$version" --select --experimental-unxip
         xcode="$(/usr/bin/env -u DEVELOPER_DIR /usr/bin/xcode-select -p)"
-        if [ -n "''${HELIUM_XCODE:-}" ]; then
-          echo "==> note: HELIUM_XCODE is set, unset it to use the new Xcode" >&2
+        if [ -n "''${HARK_XCODE:-}" ]; then
+          echo "==> note: HARK_XCODE is set, unset it to use the new Xcode" >&2
         fi
       fi
       export DEVELOPER_DIR="$xcode"
@@ -78,7 +78,7 @@ let
   };
 in
 mkShellNoCC {
-  name = "helium-macos";
+  name = "hark-macos";
 
   packages = [
     python
@@ -96,26 +96,26 @@ mkShellNoCC {
     unset SDKROOT NIX_CFLAGS_COMPILE NIX_LDFLAGS MACOSX_DEPLOYMENT_TARGET \
       CC CXX LD AR NM RANLIB STRIP OBJC OBJCXX
 
-    ___helium_check_xcode() {
+    ___hark_check_xcode() {
       local xcode xcode_version xcode_ok
       ${resolveXcode}
 
       if [ -z "$xcode_version" ]; then
-        echo "helium: no full Xcode found (got '$xcode'); run helium-xcode-setup" >&2
+        echo "hark: no full Xcode found (got '$xcode'); run hark-xcode-setup" >&2
         return
       fi
       export DEVELOPER_DIR="$xcode"
 
       if [ -z "$xcode_ok" ]; then
-        echo "helium: Xcode $xcode_version at $xcode is too old (need ${toString minXcodeMajor}+); run helium-xcode-setup" >&2
+        echo "hark: Xcode $xcode_version at $xcode is too old (need ${toString minXcodeMajor}+); run hark-xcode-setup" >&2
       fi
 
       if ! /usr/bin/xcrun -f metal >/dev/null 2>&1; then
-        echo "helium: Metal toolchain missing; run helium-xcode-setup" >&2
+        echo "hark: Metal toolchain missing; run hark-xcode-setup" >&2
       fi
     }
-    ___helium_check_xcode
-    unset -f ___helium_check_xcode
+    ___hark_check_xcode
+    unset -f ___hark_check_xcode
   '';
 
   meta.platforms = lib.platforms.darwin;

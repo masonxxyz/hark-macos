@@ -10,10 +10,10 @@ fi
 
 source "$_root_dir/env.sh"
 
-helium_resources() {
+hark_resources() {
   python3 "$_main_repo/utils/generate_resources.py" "$_main_repo/resources/generate_resources.txt" "$_main_repo/resources"
   python3 "$_main_repo/utils/replace_resources.py" "$_root_dir/resources/platform_resources.txt" "$_root_dir/resources" "$_src_dir"
-  python3 "$_main_repo/utils/replace_resources.py" "$_main_repo/resources/helium_resources.txt" "$_main_repo/resources" "$_src_dir"
+  python3 "$_main_repo/utils/replace_resources.py" "$_main_repo/resources/hark_resources.txt" "$_main_repo/resources" "$_src_dir"
 }
 
 fetch_sources() {
@@ -55,10 +55,10 @@ prepare_sources() {
   python3 "$_main_repo/utils/domain_substitution.py" apply -r "$_main_repo/domain_regex.list" -f "$_main_repo/domain_substitution.list" "$_src_dir"
   python3 "$_main_repo/utils/name_substitution.py" --sub -t "$_src_dir"
   python3 "$_main_repo/utils/i18n_apply.py" -t "$_src_dir"
-  python3 "$_main_repo/utils/helium_version.py" \
+  python3 "$_main_repo/utils/hark_version.py" \
     --tree "$_main_repo" --platform-tree "$_root_dir" --chromium-tree "$_src_dir"
 
-  helium_resources
+  hark_resources
 }
 
 write_gn_args() {
@@ -131,12 +131,12 @@ configure_build() {
   gn_gen
 }
 
-helium_build() {
+hark_build() {
   cd "$_src_dir"
   local SISO_PATH="${SISO_PATH:-$_siso_path}"
   export SISO_PATH
   local -a command=(python3 "$_depot_tools_dir/autoninja.py" -C "$_out_dir" chrome chromedriver)
-  if [ "${_helium_exec_build:-}" = true ]; then
+  if [ "${_hark_exec_build:-}" = true ]; then
     exec "${command[@]}" "$@"
   fi
   "${command[@]}" "$@"
@@ -148,6 +148,6 @@ if [ "${BASH_SOURCE[0]:-}" = "$0" ]; then
     exit 2
   fi
   shift
-  _helium_exec_build=true
-  helium_build "$@"
+  _hark_exec_build=true
+  hark_build "$@"
 fi

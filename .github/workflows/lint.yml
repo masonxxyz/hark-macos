@@ -16,4 +16,4 @@ jobs:
     - uses: actions/setup-python@v5
       with:
         python-version: '3.14'
-    - run: ./helium-chromium/devutils/lint.py -t .
+    - run: ./hark-chromium/devutils/lint.py -t .

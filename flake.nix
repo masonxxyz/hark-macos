@@ -1,5 +1,5 @@
 {
-  description = "Helium macOS development environment";
+  description = "Hark macOS development environment";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";

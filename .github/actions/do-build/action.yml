@@ -1,4 +1,4 @@
-name: Build Helium
+name: Build Hark
 inputs:
   arch:
     required: true

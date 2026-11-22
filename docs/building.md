@@ -1,4 +1,4 @@
-# Building and developing Helium
+# Building and developing Hark
 
 ### Navigation
 - [Official (non-development) build](#official-non-development-build)
@@ -20,7 +20,7 @@
    `brew install python@3.13 wget zstd coreutils readline`
 1. Install Python dependencies via `pip3`: `pip3 install requests pillow`
     * Note that you might need to use `--break-system-packages` if you don't want to use a
-      dedicated Python environment for building Helium.
+      dedicated Python environment for building Hark.
 1. Install Metal toolchain: `xcodebuild -downloadComponent MetalToolchain`
 1. Unlink binutils to use the one provided with Xcode: `brew unlink binutils`
 1. Restart your terminal.
@@ -34,8 +34,8 @@ nix develop -c zsh     # or, with direnv: direnv allow
 ```
 
 Xcode can't be shipped through Nix, so the shell uses the Xcode from
-`$HELIUM_XCODE` or `xcode-select -p`, and warns if it's missing, too old, or
-lacks the Metal toolchain. In that case, run `helium-xcode-setup [version]`
+`$HARK_XCODE` or `xcode-select -p`, and warns if it's missing, too old, or
+lacks the Metal toolchain. In that case, run `hark-xcode-setup [version]`
 from inside the shell: it installs Xcode via `xcodes` (Apple ID login
 required), accepts the license, and downloads the Metal toolchain.
 
@@ -54,8 +54,8 @@ If you want to notarize the build, you need to have an Apple Developer ID and a 
 If you don't have an Apple Developer ID to sign the build (or you don't want to sign it), you can simply not specify MACOS_CERTIFICATE_NAME.
 
 ```sh
-git clone --recurse-submodules https://github.com/imputnet/helium-macos.git
-cd helium-macos
+git clone --recurse-submodules https://github.com/masonxxyz/hark-macos.git
+cd hark-macos
 ```
 
 to switch to the desired release or development branch.
@@ -100,22 +100,22 @@ brew install quilt
 
 2. Setup the dev environment fully for the first time:
     ```sh
-    he setup
+    hark setup
     ```
 
-   Use `he setup -c` to clone Chromium instead of downloading prepared archives.
+   Use `hark setup -c` to clone Chromium instead of downloading prepared archives.
 
 3. Build your first development binary:
     ```sh
-    he build
+    hark build
     ```
 
 4. Run the development build with a dedicated data dir:
     ```sh
-    he run
+    hark run
     ```
 
-5. Done! You have your own home-grown Helium ready for tinkering.
+5. Done! You have your own home-grown Hark ready for tinkering.
 
 ### Creating a new patch
 
@@ -135,7 +135,7 @@ brew install quilt
     ```
     * Note: path here is relative to `build/src`
 
-4. Modify files, test them by building and running Helium.
+4. Modify files, test them by building and running Hark.
 
 5. When you're done, refresh the patch:
     ```sh
@@ -144,13 +144,13 @@ brew install quilt
 
 6. Unmerge the patch series:
     ```sh
-    he unmerge
+    hark unmerge
     ```
 
 7. Commit the patch & series change to a new branch and make a PR!
 
 #### Dev util help menu
-To see all commands available in `dev.sh`, just run `he`.
+To see all commands available in `dev.sh`, just run `hark`.
 
 #### quilt manual
 Confused about quilt? Run ```man quilt``` to read more about its functionality.
@@ -163,7 +163,7 @@ Confused about quilt? Run ```man quilt``` to read more about its functionality.
 
 1. Download sources, set up GN, and prepare third-party dependencies:
     ```sh
-    he presetup
+    hark presetup
     ```
 
 1. Switch to src directory
@@ -181,13 +181,13 @@ Confused about quilt? Run ```man quilt``` to read more about its functionality.
     3. Refresh the patch: `quilt refresh`
     4. Go back to Step 5.
 
-1. After all patches are fixed, run `he version && he configure` to finish build env setup.
-1. Build and run Helium to verify that everything functions as intended: `he build && he run`
-1. Run `he validate config` and resolve the error if it occurs.
-1. Run `he pop` to pop all applied patches.
-1. Validate that patches are applied correctly: `he validate config`
-1. Unmerge main and platform patches: `he unmerge`
+1. After all patches are fixed, run `hark version && hark configure` to finish build env setup.
+1. Build and run Hark to verify that everything functions as intended: `hark build && hark run`
+1. Run `hark validate config` and resolve the error if it occurs.
+1. Run `hark pop` to pop all applied patches.
+1. Validate that patches are applied correctly: `hark validate config`
+1. Unmerge main and platform patches: `hark unmerge`
 1. Ensure that patches and series are formatted correctly, e.g. no blank lines.
-1. Check the consistency of the series file: `he validate series`
+1. Check the consistency of the series file: `hark validate series`
 1. Use git to add changes and commit. Refer to recent commit history for an appropriate commit comment.
 

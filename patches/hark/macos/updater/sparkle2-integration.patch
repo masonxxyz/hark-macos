@@ -363,7 +363,7 @@
  
    [self initShareMenu];
 +#if BUILDFLAG(IS_MAC) && BUILDFLAG(ENABLE_SPARKLE)
-+  helium::InitializeSparkleFramework();
++  hark::InitializeSparkleFramework();
 +#endif
  }
  
@@ -434,7 +434,7 @@
 +
 +      deps += [
 +        "//third_party/sparkle:build_sparkle_framework",
-+        "//components/helium_services",
++        "//components/hark_services",
 +      ]
 +      frameworks += [ "Sparkle.framework" ]
 +    }
@@ -580,8 +580,8 @@
  #else   // !BUILDFLAG(IS_CHROMEOS).
 -  // Set the flag to restore state after the restart.
 +#if BUILDFLAG(ENABLE_SPARKLE)
-+  if (helium::ApplicationIsNearlyUpdated()) {
-+    helium::RelaunchBrowserUsingSparkle();
++  if (hark::ApplicationIsNearlyUpdated()) {
++    hark::RelaunchBrowserUsingSparkle();
 +    return;
 +  }
 +#endif

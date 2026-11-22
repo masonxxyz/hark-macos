@@ -34,10 +34,10 @@ jobs:
         key: >-
           chromium-source-v1-${{ runner.os }}-${{ runner.arch }}-${{
             hashFiles(
-              'helium-chromium/chromium_version.txt',
-              'helium-chromium/*.ini',
-              'helium-chromium/pruning.list',
-              'helium-chromium/utils/**',
+              'hark-chromium/chromium_version.txt',
+              'hark-chromium/*.ini',
+              'hark-chromium/pruning.list',
+              'hark-chromium/utils/**',
               'downloads*.ini',
               'devutils/shared.sh',
               '.github/scripts/sanity-check.sh'

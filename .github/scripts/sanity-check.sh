@@ -22,11 +22,11 @@ if [ "$_check" = "sanity" ]; then
     write_gn_args "$_arch" dev
 fi
 
-he resources
-python3 "$_main_repo/utils/helium_version.py" \
+hark resources
+python3 "$_main_repo/utils/hark_version.py" \
     --tree "$_main_repo" --platform-tree "$_root_dir" --chromium-tree "$_src_dir"
-he merge
-he push | tee setup.log
+hark merge
+hark push | tee setup.log
 
 if [ "$_check" = "substitution" ]; then
     python3 "$_main_repo/utils/name_substitution.py" --sub -t "$_src_dir"
@@ -34,7 +34,7 @@ if [ "$_check" = "substitution" ]; then
         -r "$_main_repo/domain_regex.list" \
         -f "$_main_repo/domain_substitution.list" "$_src_dir"
 
-    grep -q Helium "$_src_dir/components/omnibox_strings.grdp"
+    grep -q Hark "$_src_dir/components/omnibox_strings.grdp"
     exit 0
 fi
 
@@ -43,7 +43,7 @@ if grep -q 'offset .* lines' setup.log; then
     exit 1
 fi
 
-he configure
+hark configure
 
 cd "$_src_dir"
 _status_code=0

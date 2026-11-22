@@ -68,7 +68,7 @@
  
  // Functions that may be accessed from non-Objective-C C/C++ code.
 -namespace rebel {
-+namespace helium {
++namespace hark {
  
  // Attempt to relaunch browser and install updates if any.
  void RelaunchBrowserUsingSparkle();
@@ -89,7 +89,7 @@
 +// Try to find a profile which allows updates.
 +void TryAcquireProfilePtr();
 +
-+}  // namespace helium
++}  // namespace hark
  
 -#endif  // REBEL_CHROME_BROWSER_MAC_SPARKLE_GLUE_H_
 +#endif  // CHROME_BROWSER_MAC_SPARKLE_GLUE_H_
@@ -128,7 +128,7 @@
  #include "chrome/browser/ui/webui/help/version_updater.h"
  #include "chrome/grit/branded_strings.h"
  #include "chrome/grit/generated_resources.h"
-+#include "components/helium_services/helium_services_helpers.h"
++#include "components/hark_services/hark_services_helpers.h"
  #include "content/public/browser/browser_task_traits.h"
  #include "content/public/browser/browser_thread.h"
  #include "content/public/browser/web_contents.h"
@@ -317,13 +317,13 @@
 +}
 +
 +- (BOOL)shouldAccessUpdateService {
-+  helium::TryAcquireProfilePtr();
++  hark::TryAcquireProfilePtr();
 +
 +  if (!profile_) {
 +    return NO;
 +  }
 +
-+  return helium::ShouldAccessUpdateService(*profile_->GetPrefs());
++  return hark::ShouldAccessUpdateService(*profile_->GetPrefs());
 +}
 +
 +- (BOOL)updater:(nonnull SPUUpdater *)updater
@@ -353,7 +353,7 @@
 -  if (self.appcastFeedUrl != nil) {
 -    return self.appcastFeedUrl;
 +- (NSString*)feedURLStringForUpdater:(SPUUpdater*)updater {
-+  helium::TryAcquireProfilePtr();
++  hark::TryAcquireProfilePtr();
 +
 +  if (!profile_) {
 +    return @"";
@@ -361,7 +361,7 @@
  
 -  std::string update_url = rebel::GetChannelUpdateURL(profile_->GetPrefs());
 +  return base::SysUTF8ToNSString(
-+    helium::GetBrowserUpdateURL(*profile_->GetPrefs()).spec());
++    hark::GetBrowserUpdateURL(*profile_->GetPrefs()).spec());
 +}
  
 -  self.appcastFeedUrl =
@@ -381,7 +381,7 @@
 +    (nonnull SPUUpdater *)updater
 +{
 +    NSString *channel = base::SysUTF8ToNSString(
-+      helium::GetSelectedChannel());
++      hark::GetSelectedChannel());
 +    return [NSSet setWithObject:channel];
  }
  
@@ -516,7 +516,7 @@
        registerStatusCallback:base::BindRepeating(
                                   &VersionUpdaterSparkle::UpdateStatus,
                                   weak_ptr_factory_.GetWeakPtr())];
-+  helium::InitializeSparkleFramework();
++  hark::InitializeSparkleFramework();
  }
  
  VersionUpdaterSparkle::~VersionUpdaterSparkle() = default;
@@ -596,7 +596,7 @@
  }
  
 -namespace rebel {
-+namespace helium {
++namespace hark {
  
  void RelaunchBrowserUsingSparkle() {
 +  SparkleObserver* observer = VersionUpdaterSparkle::sparkle_observer_;
@@ -694,7 +694,7 @@
 +
 +  ProfileManager* profile_manager = g_browser_process->profile_manager();
 +  for (auto* profile : profile_manager->GetLoadedProfiles()) {
-+    if (helium::ShouldAccessUpdateService(*profile->GetPrefs())) {
++    if (hark::ShouldAccessUpdateService(*profile->GetPrefs())) {
 +      SwitchUnderlyingUpdaterProfile(profile);
 +      return;
 +    }
@@ -702,7 +702,7 @@
  }
  
 -}  // namespace rebel
-+}  // namespace helium
++}  // namespace hark
 --- a/chrome/browser/upgrade_detector/get_installed_version_mac.mm
 +++ b/chrome/browser/upgrade_detector/get_installed_version_mac.mm
 @@ -11,12 +11,12 @@
@@ -731,7 +731,7 @@
 -        return InstalledAndCriticalVersion(base::Version(
 -            base::UTF16ToASCII(rebel::CurrentlyDownloadedVersion())));
 +        return InstalledAndCriticalVersion(
-+            base::Version(helium::CurrentlyDownloadedVersion()
++            base::Version(hark::CurrentlyDownloadedVersion()
 +                          .value_or(updater::CurrentlyInstalledVersion().GetString())));
        }),
  #else
